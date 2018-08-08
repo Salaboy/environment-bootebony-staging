@@ -44,7 +44,7 @@ application:
   activiti-cloud-connector:
     enabled: true
     image:
-      repository: salaboy/activiti-cloud-query
+      repository: salaboy/example-cloud-connector
       tag: salaboy-api-refactoring-3rd
       pullPolicy: Always
   activiti-cloud-demo-ui:
