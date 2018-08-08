@@ -27,7 +27,6 @@ global:
   keycloak:
     url: "http://activiti-keycloak.jx-staging.35.195.224.137.nip.io/auth"
 
-
 application:
   runtime-bundle:
     enabled: true
@@ -89,7 +88,7 @@ infrastructure:
           sed -i 's/activiti-cloud-demo-ui:3000/activiti-cloud-demo-ui.35.224.88.61.nip.io/g' activiti-realm.json
   activiti-cloud-gateway:
     ingress:
-      enabled: false
+      enabled: true
       hostName: "activiti-cloud-gateway.jx-staging.35.195.224.137.nip.io"
       annotations:
         kubernetes.io/ingress.class: nginx
