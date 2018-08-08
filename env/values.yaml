@@ -22,3 +22,78 @@ expose:
   Annotations:
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-delete-policy: hook-succeeded
+
+global:
+  keycloak:
+    url: "http://activiti-keycloak.35.195.224.137.nip.io/auth"
+
+
+application:
+  runtime-bundle:
+    enabled: true
+    image:
+      repository: salaboy/example-runtime-bundle
+      tag: salaboy-api-refactoring-3rd
+      pullPolicy: Always
+
+  activiti-cloud-query:
+    image:
+      repository: salaboy/activiti-cloud-query
+      tag: salaboy-api-refactoring-3rd
+      pullPolicy: Always
+
+  activiti-cloud-connector:
+    enabled: true
+    image:
+      repository: salaboy/activiti-cloud-query
+      tag: salaboy-api-refactoring-3rd
+      pullPolicy: Always
+  activiti-cloud-demo-ui:
+    enabled: false
+  activiti-cloud-audit:
+    image:
+      repository: salaboy/activiti-cloud-audit
+      tag: salaboy-api-refactoring-3rd
+      pullPolicy: Always
+infrastructure:
+  activiti-keycloak:
+    keycloak:
+      enabled: true
+      keycloak:
+        username: admin
+        password: admin
+        persistence:
+          deployPostgres: false
+          dbVendor: H2
+        ingress:
+          enabled: true
+          path: /
+          hosts:
+            - "activiti-keycloak.35.195.224.137.nip.io"
+          annotations:
+            kubernetes.io/ingress.class: nginx
+            nginx.ingress.kubernetes.io/rewrite-target: /
+            nginx.ingress.kubernetes.io/configuration-snippet: |
+              add_header Access-Control-Allow-Methods "POST, GET, OPTIONS, PUT, PATCH, DELETE";
+              add_header Access-Control-Allow-Credentials true;
+              add_header Access-Control-Allow-Headers "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization";
+        preStartScript: |
+          /opt/jboss/keycloak/bin/add-user.sh -u admin -p admin
+          /opt/jboss/keycloak/bin/add-user-keycloak.sh -r master -u admin -p admin
+          cp /realm/activiti-realm.json .
+          sed -i 's/activiti-cloud-demo-ui:30082/activiti-keycloak.35.224.88.61.nip.io/g' activiti-realm.json
+          sed -i 's/activiti-cloud-demo-ui:\*/activiti-keycloak.35.224.88.61.nip.io:*/g' activiti-realm.json
+          sed -i 's/placeholder.com/activiti-keycloak.35.224.88.61.nip.io:*/g' activiti-realm.json
+          sed -i 's/dummy.com/activiti-cloud-gateway.35.224.88.61.nip.io:*/g' activiti-realm.json
+          sed -i 's/activiti-cloud-sso-idm-kub:30082/activiti-cloud-gateway.35.224.88.61.nip.io/g' activiti-realm.json
+          sed -i 's/activiti-cloud-demo-ui:3000/activiti-cloud-demo-ui.35.224.88.61.nip.io/g' activiti-realm.json
+  activiti-cloud-gateway:
+    ingress:
+      enabled: true
+      hostName: "activiti-cloud-gateway.35.195.224.137.nip.io"
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/rewrite-target: /
+        nginx.ingress.kubernetes.io/enable-cors: true
+        nginx.ingress.kubernetes.io/cors-allow-headers: "*"
+        nginx.ingress.kubernetes.io/x-forwarded-prefix: true
